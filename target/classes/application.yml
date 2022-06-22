@@ -1,0 +1,39 @@
+server:
+  # 端口
+  port: 8080
+  #servlet:
+    # 项目名称
+    #context-path : /MavenTest
+
+spring:
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ursdb?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8
+    username: root
+    password: 123456
+
+  mvc:
+    prefix: /templates/
+    suffix: .html
+    favicon:
+      enabled: false #关闭默认的favicon,将自己的图标放在static下显示自己的图标
+
+  mail:
+    host: smtp.qq.com
+    username: 2809205039@qq.com # 邮箱账号
+    password: jmlipewyoerydefh # 邮箱账号授权码： 设置-账户-生成授权码
+    port: 465
+    nickname: 蓝月亮洗衣液
+    from: 2809205039@qq.com
+    default-encoding: UTF-8
+
+    properties:
+      mail:
+        smtp:
+          socketFactoryClass: javax.net.ssl.SSLSocketFactory
+          ssl:
+            enable: true
+

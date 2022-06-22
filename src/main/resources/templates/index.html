@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--加载CSS-->
+    <link  th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css">
+<!--    <link  th:href="@{/css/bootstrap3.css}" rel="stylesheet" type="text/css">-->
+    <link  th:href="@{/css/sweetalert2.min.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/css/bootstrap-icons.css}" rel="stylesheet" type="text/css">
+    <link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" type="text/css">
+    <!--加载js-->
+    <script th:src="@{/js/jquery-3.5.1.js}"></script>
+    <script th:src="@{/js/moment.min.js}"></script>
+    <script th:src="@{/js/zh-cn.js}"></script>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<!--    <script th:src="@{/js/bootstrap3.js}"></script>-->
+    <script th:src="@{/js/echarts.min.js}"></script>
+    <script th:src="@{/js/vue.js}"></script>
+    <script th:src="@{/js/sweetalert2.min.js}"></script>
+    <script th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+    <title>首页</title>
+
+    <style>
+        .selector-for-some-widget {
+            box-sizing: content-box;
+        }
+        .btn{
+            outline: none!important;
+        }
+        .swal2-modal {
+            background-color: rgba(31,35,52,0.8) !important;
+            border: none;
+        }
+        .swal2-confirm{
+            outline: none!important;
+            background-color:rgb(18,22,39)!important;
+            box-shadow: none!important;
+        }
+        .swal2-content{
+            color: #FFFFFF!important;
+        }
+        .swal2-container{
+            z-index: 19891016;
+        }
+        .swal2-success-circular-line-left{
+            display: none;
+        }
+        .swal2-success-circular-line-right{
+            display: none;
+        }
+        .swal2-success-fix{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#testdb').click(function(){
+            $.ajax({
+                url: "testdb",
+                type: "POST",
+                xhrFields: {withCredentials: true},
+                data: {},
+                cache: false,
+                processData: false,
+                contentType: false,
+                dataTypes:"json",
+                async:false,
+                success:function(result) {
+                    console.log(result);
+                    var obj = eval("(" + result + ")");
+                    var msg = obj.msg;
+                    swal("获取到用户信息",msg,"success");
+                },
+                error:function(){
+                    swal("未知错误！","","error");
+                }
+            });
+        })
+
+    });
+</script>
+
+<script>
+    /*
+    swal(
+        'Oops...',
+        'Something went wrong!',
+        'error'
+    )*/
+</script>
+
+<script type="text/javascript">
+    function sendmailyzm(val){
+        var mailaddress = $('#mailaddress').val();
+        if(mailaddress==""){
+            swal("请填写邮箱地址！","","warning").then(function () {
+                $('#mailaddress').focus();
+            });
+            return;
+        }
+        else{
+            var reg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+            //调用正则验证test()函数
+            isok = reg.test(mailaddress);
+            if (!isok) {
+                swal("邮箱格式不正确！","","error").then(function () {
+                    $("#mailaddress").focus();
+                });
+                return;
+            }
+        }
+
+        //获取单个附件
+        /*var files = $('#fujian').prop('files');
+        var data = new FormData();
+        data.append('fujian', files[0]);
+        */
+
+        //获取整个表单的数据
+        var formData = new FormData($("#form1")[0]);
+
+        $.ajax({
+            url: "SendMailYzm",
+            type: "POST",
+            xhrFields: {withCredentials: true},
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
+            dataTypes:"json",
+            async:false,
+            success:function(result) {
+                var obj = eval("(" + result + ")");
+                var msg = obj.msg;
+
+                if(msg=="发送成功"){
+                    settime(val,60);
+                    swal({
+                        title: '发送成功!',
+                        text: '',
+                        type: 'success',
+                        timer: 1200,
+                        showConfirmButton: false,
+                        //onOpen: function () {
+                            //swal.showLoading()
+                        //}转圈圈效果
+                    })
+                }
+                else if(msg=="发送失败"){
+                    swal("发送失败！","","error");
+                }
+                else{
+                    swal("操作频繁！","","warning");
+                    settime(val,Number(msg));
+                }
+
+            },
+            error:function(){
+                swal("未知错误！","","error");
+            }
+        });
+
+    }
+
+</script>
+
+<script type="text/javascript">
+    function settime(val,countdown) {
+        if (countdown == 0) {
+            val.removeAttribute("disabled");
+            val.value="发送验证码";
+            return;
+        } else {
+            val.setAttribute("disabled", true);
+            val.value="重新发送" + countdown;
+            countdown--;
+        }
+        setTimeout(function() {
+            settime(val,countdown)
+        },1000)
+    }
+</script>
+
+<script>
+    function showfilename(){
+        /*单个文件时
+        var file = $("#fujian").val();
+        //正则表达式获取文件名，不带后缀
+        var strFileName=file.replace(/^.+?\\([^\\]+?)(\.[^\.\\]*?)?$/gi,"$1");
+        //正则表达式获取后缀
+        var FileExt=file.replace(/.+\./,"");
+        $("#filenames").val(strFileName+'.'+FileExt);
+        */
+
+
+        /*多选文件时
+        var names = '';
+        var fujian = document.getElementById("fujian");
+        for (var i = 0; i < fujian.files.length;i++) {
+            names += fujian.files[i].name+"、";
+        }
+        $("#filenames").val(names);
+        */
+    }
+</script>
+
+<script>
+    function checkyzm(){
+        var yzm = $("#yzm").val();
+        var mailaddress = $("#mailaddress").val();
+        if(mailaddress==""){
+            swal("请填写邮箱地址！","","warning").then(function () {
+                $("#mailaddress").focus();
+            })
+            return;
+        }
+        else{
+            var reg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+            //调用正则验证test()函数
+            isok = reg.test(mailaddress);
+            if (!isok) {
+                swal("邮箱格式不正确！","","error").then(function () {
+                    $("#mailaddress").focus();
+                });
+                return;
+            }
+        }
+        if(yzm==""){
+            swal("请填写验证码！","","warning").then(function () {
+                $("#yzm").focus();
+            })
+            return;
+        }
+
+        $.ajax({
+            url: "checkyzm",
+            type: "POST",
+            xhrFields: {withCredentials: true},
+            data: {"yzm":yzm,"mailaddress":mailaddress},
+            cache: false,
+            //processData: false,
+            //contentType: false,
+            dataTypes:"json",
+            async:false,
+            success:function(result) {
+                var obj = eval("(" + result + ")");
+                var msg = obj.msg;
+                swal(msg);
+            },
+            error:function(){
+                swal("未知错误！","","error");
+            }
+
+        });
+    }
+</script>
+
+<div   id="vue" style="margin: 0 auto;width: 500px;background:url(/image/rmb.jpg) no-repeat;">
+    <h5 style="text-align: center">============Bootstrap Test============</h5>
+<form style="width: 200px;margin-left: 30%" id="form1" name="form1">
+    <div class="mb-3">
+        <label for="mailaddress" class="form-label">邮箱地址</label>
+        <input type="email" class="form-control" id="mailaddress" name="mailaddress" value="" aria-describedby="emailHelp">
+        <div id="emailHelp" class="form-text">我们不会泄露你的信息</div>
+    </div>
+    <div class="mb-3" style="height: 80px">
+        <label for="yzm" class="form-label" style="">验证码</label>
+        <div>
+        <input type="text" style="width: 100px;float: left" class="form-control" id="yzm" name="yzm">
+        <input type="button" class="btn btn-primary" style="width: 95px;margin-left: 5px;padding:6px 6px" value="发送验证码" onclick="sendmailyzm(this)" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="fujian" class="form-label" style="">附件</label>
+        <div>
+            <input type="file" multiple="multiple" class="form-control" style="width: 200px;float: left" id="fujian" name="fujian" onchange="showfilename()">
+            <br><br>
+            <input type="text" id="filenames" class="form-control" style="width: 200px">
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-primary" style="margin-left: 35%" onclick="checkyzm()">确定</button>
+</form>
+
+    <input type="button" class="btn btn-primary" value="测试数据库" id="testdb" style="margin-top:15px;margin-left: 39%">
+    <input type="button" class="btn btn-primary" value="打开测试页" style="margin-top:15px;margin-left: 39%" onclick="window.location.href='tiaozhuan?a=test'">
+<br>
+
+
+    <div class="container" style="width: 500px;margin: 0 auto">
+        <div class="mb-3" style="width: 240px;margin: 0 auto">
+            <label for="datetimepicker4" class="form-label">时间</label>
+            <input type='text' class="form-control" id='datetimepicker4' style="text-align: center;width: 240"/>
+        </div>
+
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker4').datetimepicker({
+                    locale:'zh-cn',
+                    //format:'YYYY-MM-DD h:mm:ss a',
+                    format:'YYYY-MM-DD',
+                    showTodayButton:true,
+                    dayViewHeaderFormat:'YYYY年MMMM',
+                    showClose:true,
+                    keepOpen:true,
+                    //debug:true
+                    //sideBySide:true
+
+                });
+            });
+        </script>
+    </div>
+    <a href="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fpic.16pic.com%2F00%2F49%2F88%2F16pic_4988822_b.jpg&refer=http%3A%2F%2Fpic.16pic.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1648824717&t=a81cc6c62d8e550f33b1ea7ac9e0e104">蓝月亮洗衣液</a>
+
+
+</div>
+
+<div>
+   <h5 style="text-align: center">==============Vue Test==============</h5>
+
+    <div id="dataandmethod">
+        <h1>数据与方法</h1>
+        <div id="app" :style="styleObject">
+            {{a}}
+            <button @click="updatea" :class="btnclass">更新a的值</button><!--v-on的缩写@,v-bind的缩写:-->
+        </div>
+
+
+        <script type="text/javascript">
+            var vm1 = new Vue({
+                el   : "#app",
+                data :{
+                    a : "现在是旧的a",
+                    btnclass:"btn btn-primary",
+                    styleObject:{
+                        color:'red',
+                        textAlign: 'center'
+                    }
+                },
+                methods:{
+                    updatea:function(e){
+                        console.log(e);
+                        this.a = "现在是新的a";
+                        swal("进入函数");
+
+                    }
+                }
+            });
+
+            vm1.$watch('a', function(newVal, oldVal){
+                swal("newa="+newVal+",olda="+oldVal)
+            })
+
+        </script>
+    </div><br>
+
+    <div id="lifecylehooks">
+        <h1>实例生命周期钩子</h1>
+        <div id="app" :style="styleObject">
+            {{msg}}
+        </div>
+        <script type="text/javascript">
+            var vm2 = new Vue({
+                el : "#lifecylehooks",
+                data : {
+                    msg : "hi vue",
+                    styleObject: {
+                        textAlign:'center',
+                    }
+                },
+                //在实例初始化之后，数据观测 (data observer) 和 event/watcher 事件配置之前被调用。
+                beforeCreate:function(){
+                    console.log('beforeCreate');
+                },
+                /* 在实例创建完成后被立即调用。
+                在这一步，实例已完成以下的配置：数据观测 (data observer)，属性和方法的运算，watch/event 事件回调。
+                然而，挂载阶段还没开始，$el 属性目前不可见。 */
+                created	:function(){
+                    console.log('created');
+                },
+                //在挂载开始之前被调用：相关的渲染函数首次被调用
+                beforeMount : function(){
+                    console.log('beforeMount');
+
+                },
+                //el 被新创建的 vm.$el 替换, 挂在成功
+                mounted : function(){
+                    console.log('mounted');
+                },
+                //数据更新时调用
+                beforeUpdate : function(){
+                    console.log('beforeUpdate');
+
+                },
+                //组件 DOM 已经更新, 组件更新完毕
+                updated : function(){
+                    console.log('updated');
+
+                }
+            });
+            setTimeout(function(){
+                vm2.msg = "change ......";
+            }, 3000);
+        </script>
+    </div><br>
+
+    <div id="templatesyntax">
+        <h1>模板语法1</h1>
+        <div id="app" :style="styleObject">
+            {{msg}}
+            <p>Using mustaches: {{ rawHtml }}</p>
+            <p v-html="rawHtml"></p>
+            <div :class="color">test...</div>
+            <p>{{ number + 1 }}</p>
+            <p>{{ 1 == 1 ? 'YES' : 'NO' }}</p>
+            <p>{{ message.split('').reverse().join('') }}</p><!--这里主要讲支持javascript,split('')的意思是把单词拆分成字母装入数组,reverse是反转数组元素顺序-->
+        </div>
+        <script type="text/javascript">
+            var vm3 = new Vue({
+                el : "#templatesyntax",
+                data : {
+                    msg : "hi vue",
+                    rawHtml : '<span style="color:red">this is rawHtml</span>',
+                    color:'blue',
+                    number : 10,
+                    ok : 1,
+                    message : "vue",
+                    styleObject:{
+                        textAlign:'center'
+                    }
+                }
+            });
+            setTimeout(function (){
+                vm3.msg = "hi...";
+                vm3.color = "red";
+            },3000)
+
+        </script>
+    </div><br>
+
+    <div id="templatesyntax2">
+        <h1>模板语法2</h1>
+        <div id="app" :style="styleObject">
+            <button :class="btnclass" @click="showseen">点击显示或隐藏seen</button>
+            <p v-if="seen">{{msg}}</p>
+            <a v-bind:href="url">点击跳转页面</a>
+            <div @click="click1">
+                <div @click.stop="click2"><!--加了.stop click1就不会执行，不加的话外层的事件都会执行-->
+                    click me
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm4 = new Vue({
+                el : "#templatesyntax2",
+                data : {
+                    stop:"",
+                    btnclass:"btn btn-primary",
+                    msg:"",
+                    seen : false,
+                    url : "https://cn.vuejs.org/v2/guide/syntax.html#%E6%8C%87%E4%BB%A4",
+                    styleObject:{
+                        textAlign:'center'
+                    }
+                },
+                methods:{
+                    click1 : function () {
+                        swal('click1......');
+                    },
+                    click2: function () {
+                        swal('click2......');
+                    },
+                    showseen:function(){
+                        if(this.seen==false){
+                            this.seen=true;
+                            this.msg="现在你看到我了";
+                        }
+                        else{
+                            this.seen=false;
+                            this.msg="点击按钮才能看见我哦";
+                        }
+                    }
+                }
+            });
+        </script>
+    </div><br>
+
+    <div id="classandstylebindings">
+        <h1>class与style绑定</h1>
+        <div id="app" style="text-align: center">
+            <div
+                    class="test"
+                    v-bind:class="[ isActive ? 'active' : '', isGreen ? 'green' : '']"
+                    style="width:200px; height:200px; text-align:center; line-height:200px;">
+                hi vue
+            </div><!--clss=那里是三元运算，主要是看isActive和isGreen的boolean值，注意是[]括号，下面那里isRed也用到了三元运算，下面那里冒号的左边是属性，右边是data，注意是{}括号-->
+
+            <div
+                    :style="{color:color, fontSize:size, background: isRed ? '#FF0000' : ''}">
+                hi vue2
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm5 = new Vue({
+                el : "#classandstylebindings",
+                data : {
+                    isActive : true,
+                    isGreen : true,
+                    color : "#FFFFFF",
+                    size : '50px',
+                    isRed : true
+                }
+            });
+        </script>
+    </div><br>
+
+    <div id="conditionalrendering">
+        <h1>条件渲染</h1><br><!--if else if... else-->
+        <div id="app">
+            <div v-if="type === 'A'">
+                A
+            </div>
+            <div v-else-if="type === 'B'">
+                B
+            </div>
+            <div v-else-if="type === 'C'">
+                C
+            </div>
+            <div v-else>
+                Not A/B/C
+            </div>
+            <button class="btn btn-primary" @click="changerendering">改变渲染的div</button>
+            <button class="btn btn-primary" @click="showorhide">显示或隐藏element</button>
+            <h1 v-show="ok">Hello!</h1>
+        </div>
+        <script type="text/javascript">
+            var vm6 = new Vue({
+                el : "#conditionalrendering",
+                data : {
+                    type : "A",
+                    ok : false
+                },
+                methods:{
+                    changerendering:function(){
+                        switch (this.type) {
+                            case 'A':
+                                this.type="B";
+                                break;
+                            case 'B':
+                                this.type="C";
+                                break;
+                            case 'C':
+                                this.type='D';
+                                break;
+                            case 'D':
+                                this.type='A';
+                                break;
+                        }
+                    },
+                    showorhide:function(){
+                        if(this.ok==false)
+                            this.ok=true;
+                        else
+                            this.ok=false;
+                    }
+                }
+            });
+        </script>
+    </div><br>
+
+    <div id="listrendering">
+        <h1>列表渲染</h1>
+        <div id="app">
+            <ul>
+                <li v-for="item,index in items" :key="index"><!--对于普通的数组来说，in前面第1个参数是value，第2个参数是序号，key的作用是在循环时标记每一次循环的节点，相当于是li标签的id-->
+                    {{index}}:{{ item.message }}
+                </li><!--key建议是字符串abcd...或者数字1234...,需要注意的是,即使是普通数组,如果数组值有名字的话，在获取值时还需要用点的方式获取变量的值-->
+            </ul><!--比如[1,2,3]这种数组不需要用点的方式item可以直接获得值，但是[{a:1},{a:2},{a:3}]这种数组要用item.a的方式取得值-->
+            <ul>
+                <li v-for="(value,key,index) in object"><!--对于对象数组来说，in前面可以有三个参数，第1个参数是对象里的参数值，第2个参数是对象里的参数名，第3个是序号index-->
+                    {{index}}==>{{key}} : {{ value }}<!--循环一个对象时index可以获取，多个对象时index本身无法获取，但:key="index"的话，可以通过key获取index-->
+                </li>
+            </ul>
+        </div>
+        <script type="text/javascript">
+            var vm7 = new Vue({
+                el : "#listrendering",
+                data : {
+                    items : [
+                        { message: 'Foo' },
+                        { message: 'Bar' }
+                    ],
+                    object: {
+                        title: 'How to do lists in Vue',
+                        author: 'Jane Doe',
+                        publishedAt: '2016-04-10'
+                    }
+                }
+            });
+        </script>
+    </div><br>
+
+    <div id="eventhanding">
+        <h1>事件处理</h1>
+        <div id="app">
+            <div id="example-1">
+                <button v-on:click="counter += 1" :class="btnclass"> 数值 :  {{ counter }} </button>
+                <button @click="counter=0" :class="btnclass">还原数值</button><br/>
+                <button v-on:dblclick="greet('双击了', $event)" :class="btnclass">双击事件</button><!--dblclick是双击事件-->
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm8 = new Vue({
+                el : "#eventhanding",
+                data : {
+                    counter: 0,
+                    btnclass : "btn btn-primary"
+                },
+                methods:{
+                    greet : function (str, e) {
+                        swal("str="+str);
+                        console.log(e);
+                    }
+                }
+            });
+        </script>
+    </div><br>
+
+    <div id="forminputbindings">
+        <h1>表单输入绑定</h1>
+        <div id="app">
+            <div id="example-1">
+                <input v-model="message" placeholder="edit me" :class="style">
+                <p>Message is: {{ message }}</p>
+                <textarea v-model="message2" placeholder="add multiple lines" :class="style"></textarea>
+                <p style="white-space: pre-line;">textarea: {{ message2 }}</p>
+                <br />
+
+                <div>
+                    <input type="checkbox" id="jack" value="Jack" v-model="checkedNames" :class="style2">
+                    <label for="jack" class="form-label">Jack</label>
+                    <input type="checkbox" id="john" value="John" v-model="checkedNames" :class="style2">
+                    <label for="john" class="form-label">John</label>
+                    <input type="checkbox" id="mike" value="Mike" v-model="checkedNames" :class="style2">
+                    <label for="mike" class="form-label">Mike</label>
+                    <br>
+                    <span>Checked names: {{ checkedNames }}</span>
+                </div>
+
+                <div style="margin-top:20px;">
+                    <input type="radio" id="one" value="One" v-model="picked" :class="style2">
+                    <label for="one" class="form-label">One</label>
+                    <br>
+                    <input type="radio" id="two" value="Two" v-model="picked" :class="style2">
+                    <label for="two" class="form-label">Two</label>
+                    <br>
+                    <span>Picked: {{ picked }}</span>
+                </div>
+                <button type="button" @click="submit" class="btn btn-primary">提交</button>
+            </div>
+
+        </div>
+        <script type="text/javascript">
+            var vm9 = new Vue({
+                el : "#forminputbindings",
+                data : {
+                    message : "test",
+                    message2 :"hi",
+                    checkedNames : ['Jack', 'John'],
+                    picked : "Two",
+                    style:"form-control",
+                    style2:"form-check-input"
+                },
+                methods: {
+                    submit : function () {
+                        swal("inputvalue="+this.message+"\ntextareavalue="+this.message2+"\n多选值="+this.checkedNames+"\n单选值="+this.picked);
+                    }
+                }
+            });
+        </script>
+    </div><br>
+
+    <div id="componentbasics">
+        <h1>组件基础</h1>
+        <div id="app">
+            <button-counter title="title1 : " @clicknow="clicknow">
+                <h2>hi...h2</h2>
+            </button-counter>
+            <button-counter title="title2 : "></button-counter>
+        </div>
+        <script type="text/javascript">
+            Vue.component('button-counter', {
+                props: ['title'],
+                data: function () {
+                    return {
+                        count: 0
+                    }
+                },
+                template: '<div><h1>hi...</h1><button v-on:click="clickfun">{{title}} You clicked me {{ count }} times.</button><slot></slot></div>',
+                methods:{
+                    clickfun : function () {
+                        this.count ++;
+                        this.$emit('clicknow', this.count);
+                    }
+                }
+            })
+            var vm10 = new Vue({
+                el : "#componentbasics",
+                data : {
+
+                },
+                methods:{
+                    clicknow : function (e) {
+                        console.log(e);
+                    }
+                }
+            });
+        </script>
+    </div>
+
+
+
+
+
+</div>
+<style type="text/css">
+    .red{color:red;}
+    .blue{color:blue; font-size:100px;}
+    .test{font-size:30px;}
+    .green{color:#00FF00;}
+    .active{background:black;}
+</style>
+</body>
+</html>
